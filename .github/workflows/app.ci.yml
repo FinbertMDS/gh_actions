@@ -6,11 +6,12 @@ on:
 
 jobs:
   kuji:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Run Appium Tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        script: "adb install-multiple apps/R_Kuji/config.armeabi_v7a.apk apps/R_Kuji/config.mdpi.apk apps/R_Kuji/jp.co.rakuten.rakutenluckykuji.apk && echo 123"
+        target: google_apis
+        script: "adb install-multiple apps/R_Kuji/config.mdpi.apk apps/R_Kuji/jp.co.rakuten.rakutenluckykuji.apk && echo 123"
