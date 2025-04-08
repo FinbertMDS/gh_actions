@@ -6,18 +6,18 @@ on:
 
 jobs:
   kuji:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - run: ls -lah .
+    - run: ls -lah apps
     - name: Download
       uses: Difegue/action-megacmd@master
       with:
-        args: get https://mega.nz/file/3L5RBaaQ#ZRUrqXmqwcb47uAM3Op5OkUcl01L52UWMReNT0dl65E ./
-    - run: ls -lah .
+        args: get https://mega.nz/file/3L5RBaaQ#ZRUrqXmqwcb47uAM3Op5OkUcl01L52UWMReNT0dl65E ./apps
+    - run: ls -lah apps
     - name: Run Appium Tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
         target: google_apis
-        script: "adb install R_Search.apk && echo 123"
+        script: "adb install apps/R_Search.apk && echo 123"
