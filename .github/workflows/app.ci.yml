@@ -12,6 +12,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: 🧾 Cấp quyền thực thi cho script
+        run: chmod +x scripts/verify-secret-hash.sh
+
       - name: 🔐 Verify secrets hash
         run: scripts/verify-secret-hash.sh
         env:
