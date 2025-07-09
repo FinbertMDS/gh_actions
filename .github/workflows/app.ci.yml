@@ -2,43 +2,47 @@ name: 🔐 Verify GitHub Secrets Hash
 
 on:
   push:
-  workflow_dispatch: # hoặc push, PR tùy bạn
+  workflow_dispatch:
 
 jobs:
   verify-secrets:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⏬ Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: 🔍 Read and compare secret hashes
-        run: |
-          echo "📄 Reading .secret-hash-check.txt..."
-
-          while IFS='=' read -r key expected_hash || [[ -n "$key" ]]; do
-            # Bỏ qua dòng comment hoặc trống
-            [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-
-            # Lấy secret từ GitHub
-            secret_value="${{ secrets[${key}] }}"
-
-            # Kiểm tra nếu secret không được set
-            if [[ -z "$secret_value" ]]; then
-              echo "⚠️  Secret $key is not set in GitHub"
-              continue
-            fi
-
-            # Tính actual hash
-            actual_hash=$(echo -n "$secret_value" | shasum -a 256 | awk '{print $1}')
-
-            # So sánh
-            if [[ "$expected_hash" == "$actual_hash" ]]; then
-              echo "✅ $key: Trùng khớp"
-            else
-              echo "❌ $key: KHÔNG khớp"
-              echo "   Expected: $expected_hash"
-              echo "   Actual  : $actual_hash"
-            fi
-
-          done < .secret-hash-check.txt
+      - name: 🔐 Verify secrets hash
+        run: verify-secret-hash.sh
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          C_UNSPLASH_ACCESS_KEY: ${{ secrets.C_UNSPLASH_ACCESS_KEY }}
+          C_AD_APP_ID_ANDROID: ${{ secrets.C_AD_APP_ID_ANDROID }}
+          C_AD_UNIT_BANNER_ANDROID: ${{ secrets.C_AD_UNIT_BANNER_ANDROID }}
+          C_AD_UNIT_INTERSTITIAL_ANDROID: ${{ secrets.C_AD_UNIT_INTERSTITIAL_ANDROID }}
+          C_AD_UNIT_REWARDED_ANDROID: ${{ secrets.C_AD_UNIT_REWARDED_ANDROID }}
+          C_AD_UNIT_REWARDED_I_ANDROID: ${{ secrets.C_AD_UNIT_REWARDED_I_ANDROID }}
+          C_AD_APP_ID_IOS: ${{ secrets.C_AD_APP_ID_IOS }}
+          C_AD_UNIT_BANNER_IOS: ${{ secrets.C_AD_UNIT_BANNER_IOS }}
+          C_AD_UNIT_INTERSTITIAL_IOS: ${{ secrets.C_AD_UNIT_INTERSTITIAL_IOS }}
+          C_AD_UNIT_REWARDED_IOS: ${{ secrets.C_AD_UNIT_REWARDED_IOS }}
+          C_AD_UNIT_REWARDED_I_IOS: ${{ secrets.C_AD_UNIT_REWARDED_I_IOS }}
+          C_ANDROID_KEYSTORE_BASE64: ${{ secrets.C_ANDROID_KEYSTORE_BASE64 }}
+          C_APP_PACKAGE_NAME: ${{ secrets.C_APP_PACKAGE_NAME }}
+          C_APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.C_APP_STORE_CONNECT_API_KEY_BASE64 }}
+          C_PLAY_STORE_KEY_BASE64: ${{ secrets.C_PLAY_STORE_KEY_BASE64 }}
+          K_UNSPLASH_ACCESS_KEY: ${{ secrets.K_UNSPLASH_ACCESS_KEY }}
+          K_AD_APP_ID_IOS: ${{ secrets.K_AD_APP_ID_IOS }}
+          K_AD_UNIT_BANNER_IOS: ${{ secrets.K_AD_UNIT_BANNER_IOS }}
+          K_AD_UNIT_INTERSTITIAL_IOS: ${{ secrets.K_AD_UNIT_INTERSTITIAL_IOS }}
+          K_AD_UNIT_REWARDED_IOS: ${{ secrets.K_AD_UNIT_REWARDED_IOS }}
+          K_AD_UNIT_REWARDED_I_IOS: ${{ secrets.K_AD_UNIT_REWARDED_I_IOS }}
+          K_AD_APP_ID_ANDROID: ${{ secrets.K_AD_APP_ID_ANDROID }}
+          K_AD_UNIT_BANNER_ANDROID: ${{ secrets.K_AD_UNIT_BANNER_ANDROID }}
+          K_AD_UNIT_INTERSTITIAL_ANDROID: ${{ secrets.K_AD_UNIT_INTERSTITIAL_ANDROID }}
+          K_AD_UNIT_REWARDED_ANDROID: ${{ secrets.K_AD_UNIT_REWARDED_ANDROID }}
+          K_AD_UNIT_REWARDED_I_ANDROID: ${{ secrets.K_AD_UNIT_REWARDED_I_ANDROID }}
+          K_ANDROID_KEYSTORE_BASE64: ${{ secrets.K_ANDROID_KEYSTORE_BASE64 }}
+          K_APP_PACKAGE_NAME: ${{ secrets.K_APP_PACKAGE_NAME }}
+          K_APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.K_APP_STORE_CONNECT_API_KEY_BASE64 }}
+          K_PLAY_STORE_KEY_BASE64: ${{ secrets.K_PLAY_STORE_KEY_BASE64 }}
