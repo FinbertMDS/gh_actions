@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 🔐 Verify secrets hash
-        run: verify-secret-hash.sh
+        run: scripts/verify-secret-hash.sh
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           C_UNSPLASH_ACCESS_KEY: ${{ secrets.C_UNSPLASH_ACCESS_KEY }}
