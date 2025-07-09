@@ -1,23 +1,44 @@
-name: Appium CI
+name: 🔐 Verify GitHub Secrets Hash
 
 on:
   push:
-  workflow_dispatch:
+  workflow_dispatch: # hoặc push, PR tùy bạn
 
 jobs:
-  kuji:
-    runs-on: macos-latest
+  verify-secrets:
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - run: ls -lah apps
-    - name: Download
-      uses: Difegue/action-megacmd@master
-      with:
-        args: get https://mega.nz/file/3L5RBaaQ#ZRUrqXmqwcb47uAM3Op5OkUcl01L52UWMReNT0dl65E ./apps
-    - run: ls -lah apps
-    - name: Run Appium Tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        target: google_apis
-        script: "adb install apps/R_Search.apk && echo 123"
+      - name: ⏬ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Read and compare secret hashes
+        run: |
+          echo "📄 Reading .secret-hash-check.txt..."
+
+          while IFS='=' read -r key expected_hash || [[ -n "$key" ]]; do
+            # Bỏ qua dòng comment hoặc trống
+            [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
+
+            # Lấy secret từ GitHub
+            secret_value="${{ secrets[${key}] }}"
+
+            # Kiểm tra nếu secret không được set
+            if [[ -z "$secret_value" ]]; then
+              echo "⚠️  Secret $key is not set in GitHub"
+              continue
+            fi
+
+            # Tính actual hash
+            actual_hash=$(echo -n "$secret_value" | shasum -a 256 | awk '{print $1}')
+
+            # So sánh
+            if [[ "$expected_hash" == "$actual_hash" ]]; then
+              echo "✅ $key: Trùng khớp"
+            else
+              echo "❌ $key: KHÔNG khớp"
+              echo "   Expected: $expected_hash"
+              echo "   Actual  : $actual_hash"
+            fi
+
+          done < .secret-hash-check.txt
