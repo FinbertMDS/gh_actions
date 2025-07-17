@@ -3,8 +3,12 @@ name: Android Internal Github (Classic)
 on:
   push:
     branches: [master]
+    paths:
+      - 'apps/classic/android/**'
   pull_request:
     branches: [master]
+    paths:
+      - 'apps/classic/android/**'
 
 jobs:
   check-changes:

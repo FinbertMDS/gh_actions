@@ -3,8 +3,12 @@ name: Android Internal Github (Killer)
 on:
   push:
     branches: [master]
+    paths:
+      - 'apps/killer/android/**'
   pull_request:
     branches: [master]
+    paths:
+      - 'apps/killer/android/**'
 
 jobs:
   check-changes:
