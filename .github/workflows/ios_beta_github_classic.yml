@@ -1,0 +1,68 @@
+name: iOS Beta Github (Classic)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'apps/classic/ios/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'apps/classic/ios/**'
+
+jobs:
+  check-changes:
+    name: Check Code Changes
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.filter.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Determine diff range
+        id: sha-range
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> $GITHUB_OUTPUT
+            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "base_sha=${{ github.event.before }}" >> $GITHUB_OUTPUT
+            echo "head_sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get changed files
+        id: get-changes
+        run: |
+          changed_files=$(git diff --name-only ${{ steps.sha-range.outputs.base_sha }} ${{ steps.sha-range.outputs.head_sha }})
+          echo "$changed_files" > changed.txt
+          echo "Changed files:"
+          cat changed.txt
+
+      - name: Check affected paths
+        id: filter
+        run: |
+          if grep -q '^packages/' changed.txt; then
+            echo "Changes in packages/** detected → skip workflow"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          elif grep -qE '^(apps/classic/)' changed.txt; then
+            echo "Changes in apps/classic/** → continue"
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "No relevant changes → skip"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    name: Run Classic Build
+    needs: check-changes
+    if: needs.check-changes.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Thêm các bước build, test, deploy ở đây
+      - name: Build iOS App
+        run: echo "🚀 Building classic app..."
