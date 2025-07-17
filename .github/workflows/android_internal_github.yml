@@ -1,0 +1,86 @@
+name: Android Internal Github (Classic & Killer)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/**'
+
+jobs:
+  build-ios:
+    name: Build and Upload Android to Google Play Console
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Decode keystore
+        run: |
+          echo "$C_ANDROID_KEYSTORE_BASE64" | base64 --decode > apps/classic/android/app/sudoku-key.keystore
+          echo "$C_PLAY_STORE_KEY_BASE64" | base64 --decode > apps/classic/android/fastlane/play-store-key.json
+          echo "$K_ANDROID_KEYSTORE_BASE64" | base64 --decode > apps/killer/android/app/sudoku-key.keystore
+          echo "$K_PLAY_STORE_KEY_BASE64" | base64 --decode > apps/killer/android/fastlane/play-store-key.json
+        env:
+          C_ANDROID_KEYSTORE_BASE64: ${{ secrets.C_ANDROID_KEYSTORE_BASE64 }}
+          C_PLAY_STORE_KEY_BASE64: ${{ secrets.C_PLAY_STORE_KEY_BASE64 }}
+          K_ANDROID_KEYSTORE_BASE64: ${{ secrets.K_ANDROID_KEYSTORE_BASE64 }}
+          K_PLAY_STORE_KEY_BASE64: ${{ secrets.K_PLAY_STORE_KEY_BASE64 }}
+
+      - name: Install dependencies
+        run: |
+          yarn install
+
+      - name: Install fastlane (global)
+        run: |
+          sudo gem install fastlane
+          fastlane --version
+
+      - name: Run Fastlane classic internal_github (Android)
+        run: |
+          cd apps/classic/android
+          fastlane internal_github
+        env:
+          APP_PACKAGE_NAME: ${{ secrets.C_APP_PACKAGE_NAME }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.C_UNSPLASH_ACCESS_KEY }}
+          AD_UNIT_BANNER_ANDROID: ${{ secrets.C_AD_UNIT_BANNER_ANDROID }}
+          AD_UNIT_INTERSTITIAL_ANDROID: ${{ secrets.C_AD_UNIT_INTERSTITIAL_ANDROID }}
+          AD_UNIT_REWARDED_ANDROID: ${{ secrets.C_AD_UNIT_REWARDED_ANDROID }}
+          AD_UNIT_REWARDED_I_ANDROID: ${{ secrets.C_AD_UNIT_REWARDED_I_ANDROID }}
+          AD_UNIT_BANNER_IOS: ${{ secrets.C_AD_UNIT_BANNER_IOS }}
+          AD_UNIT_INTERSTITIAL_IOS: ${{ secrets.C_AD_UNIT_INTERSTITIAL_IOS }}
+          AD_UNIT_REWARDED_IOS: ${{ secrets.C_AD_UNIT_REWARDED_IOS }}
+          AD_UNIT_REWARDED_I_IOS: ${{ secrets.C_AD_UNIT_REWARDED_I_IOS }}
+
+      - name: Run Fastlane killer internal_github (Android)
+        run: |
+          cd apps/killer
+          rm -rf node_modules
+          ln -s ../../node_modules .
+          cd android
+          fastlane internal_github
+        env:
+          APP_PACKAGE_NAME: ${{ secrets.K_APP_PACKAGE_NAME }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.K_UNSPLASH_ACCESS_KEY }}
+          AD_UNIT_BANNER_ANDROID: ${{ secrets.K_AD_UNIT_BANNER_ANDROID }}
+          AD_UNIT_INTERSTITIAL_ANDROID: ${{ secrets.K_AD_UNIT_INTERSTITIAL_ANDROID }}
+          AD_UNIT_REWARDED_ANDROID: ${{ secrets.K_AD_UNIT_REWARDED_ANDROID }}
+          AD_UNIT_REWARDED_I_ANDROID: ${{ secrets.K_AD_UNIT_REWARDED_I_ANDROID }}
+          AD_UNIT_BANNER_IOS: ${{ secrets.K_AD_UNIT_BANNER_IOS }}
+          AD_UNIT_INTERSTITIAL_IOS: ${{ secrets.K_AD_UNIT_INTERSTITIAL_IOS }}
+          AD_UNIT_REWARDED_IOS: ${{ secrets.K_AD_UNIT_REWARDED_IOS }}
+          AD_UNIT_REWARDED_I_IOS: ${{ secrets.K_AD_UNIT_REWARDED_I_IOS }}
