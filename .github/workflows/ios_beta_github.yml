@@ -5,10 +5,6 @@ on:
     branches: [master]
     paths:
       - 'packages/**'
-  pull_request:
-    branches: [master]
-    paths:
-      - 'packages/**'
 
 jobs:
   check-changes:
